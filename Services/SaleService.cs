@@ -39,33 +39,28 @@ namespace PharmaApi.Services
         {
             try
             {
-                if (sale.id_producto.HasValue)
-                {
-                    var existingProduct = _context.Products.Find(sale.id_producto.Value);
-                    if (existingProduct == null)
-                    {
-                        throw new Exception($"El producto con ID {sale.id_producto} especificado no existe.");
-                    }
-                }
-
-                var productsToTicket = _productService.GetProducts();
-                var newTicket = productsToTicket.Where(product => sale.lista_de_productos.Contains(product.id_producto)).ToList();
-                Console.WriteLine(newTicket.Count);
-
                 var newSale = new SaleModel
                 {
-                    id_producto = sale.id_producto,
-                    lista_de_productos = sale.lista_de_productos,
-                    id_venta = RandomIdGenerator.GenerateRandomId(),
+                    Id = RandomIdGenerator.GenerateRandomId(),
                     cantidad = sale.cantidad,
                     tipo_de_pago = sale.tipo_de_pago,
-                    ticket = newTicket,
+                    Ticket = sale.Ticket.Select(product => _context.Products.Find(product.Id)).ToList(),
                     descuento = sale.descuento,
                     precio_final = sale.precio_final,
                     horario_de_venta = sale.horario_de_venta
                 };
 
+                Console.Write("La nueva venta: ", newSale.ToString());
+
                 _context.Sales.Add(newSale);
+                foreach (var productInTicket in newSale.Ticket)
+                {
+                    var product = _context.Products.Find(productInTicket.Id);
+                    if (product != null)
+                    {
+                        product.stock -= newSale.cantidad;
+                    }
+                }
                 _context.SaveChanges();
                 return newSale;
             }

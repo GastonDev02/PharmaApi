@@ -2,7 +2,7 @@
 {
     public class ProductModel
     {
-        public int id_producto { get; set; }
+        public int Id { get; set; }
         public string nombre_producto { get; set; }
         public string descripcion_producto { get; set; }
         public string presentacion { get; set; }

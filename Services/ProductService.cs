@@ -86,7 +86,7 @@ namespace PharmaApi.Services
                 }
                 else
                 {
-                    newProduct.id_producto = RandomIdGenerator.GenerateRandomId();
+                    newProduct.Id = RandomIdGenerator.GenerateRandomId();
                     _context.Products.Add(newProduct);
                     _context.SaveChanges();
                     return "Se ha creado un nuevo producto";

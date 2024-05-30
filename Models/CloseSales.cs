@@ -2,9 +2,9 @@
 {
     public class CloseSales
     {
-        public int id_cierre_venta {  get; set; }
-        public int id_venta { get; set; }
-        public DateTime horario_cierre { get; set; }
-        public int precio_cierre { get; set; }
+        public int Id {  get; set; }
+        public DateTime date_cierre { get; set; }
+        public List<SaleModel> listado_de_ventas_dia { get; set; } = new List<SaleModel>();
+        public decimal precio_cierre { get; set; }
     }
 }

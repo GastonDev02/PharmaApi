@@ -1,6 +1,8 @@
-﻿using PharmaApi.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using PharmaApi.Data;
 using PharmaApi.Dto;
 using PharmaApi.Models;
+using PharmaApi.Utils;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -19,29 +21,18 @@ namespace PharmaApi.Services
             _saleService = saleService;
         }
 
-        public List<SaleModel> CloseDaySales(CloseDaySalesDto closeInfo)
+        public List<SaleModel> GetDaySales(CloseDaySalesDto closeInfo)
         {
             try
             {
+                Console.WriteLine("From date: " + closeInfo.FromDate);
+                Console.WriteLine("To date: " + closeInfo.ToDate);
+
                 var sales = _saleService.GetSales();
-                if (!DateTime.TryParseExact(closeInfo.FromDate, "d 'de' MMMM 'de' yyyy", new CultureInfo("es-ES"), DateTimeStyles.None, out DateTime fromDate) ||
-                    !DateTime.TryParseExact(closeInfo.ToDate, "d 'de' MMMM 'de' yyyy", new CultureInfo("es-ES"), DateTimeStyles.None, out DateTime toDate))
-                {
-                    throw new ArgumentException("Formato de fecha inválido.");
-                }
-
-                if (!TimeSpan.TryParseExact(closeInfo.FromTime, "hh\\:mm", CultureInfo.InvariantCulture, out TimeSpan fromTime) ||
-                    !TimeSpan.TryParseExact(closeInfo.ToTime, "hh\\:mm", CultureInfo.InvariantCulture, out TimeSpan toTime))
-                {
-                    throw new ArgumentException("Formato de hora inválido.");
-                }
-
-                DateTime fromDateTime = fromDate.Date + fromTime;
-                DateTime toDateTime = toDate.Date + toTime;
 
                 var filteredSales = sales.Where(sale =>
-                    sale.horario_de_venta >= fromDateTime &&
-                    sale.horario_de_venta <= toDateTime)
+                    sale.horario_de_venta >= closeInfo.FromDate &&
+                    sale.horario_de_venta <= closeInfo.ToDate)
                     .ToList();
 
                 return filteredSales;
@@ -53,5 +44,35 @@ namespace PharmaApi.Services
             }
         }
 
+
+
+        public CloseSales CloseDaySales(List<SaleModel> sales)
+        {
+            try
+            {
+                Console.WriteLine(sales);
+                var closeSales = new CloseSales
+                {
+                    Id = RandomIdGenerator.GenerateRandomId(),
+                    date_cierre = DateTime.UtcNow,
+                    precio_cierre = sales.Sum(s => s.precio_final),
+                    listado_de_ventas_dia = new List<SaleModel>()
+                };
+
+                foreach (var sale in sales)
+                {
+                    _context.Entry(sale).State = EntityState.Unchanged;
+                    closeSales.listado_de_ventas_dia.Add(sale);
+                }
+
+                _context.CloseSales.Add(closeSales);
+                _context.SaveChanges();
+                return closeSales;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"{ex.Message}");
+            }
+        }
     }
 }

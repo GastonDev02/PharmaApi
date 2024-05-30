@@ -14,18 +14,28 @@ namespace PharmaApi.Data
         public DbSet<SaleModel> Sales { get; set; }
         public DbSet<CloseSales> CloseSales { get; set; }
 
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<ProductModel>().HasKey(p => p.id_producto);
-            modelBuilder.Entity<SaleModel>().HasKey(s => s.id_venta);
-            modelBuilder.Entity<CloseSales>().HasKey(cs => cs.id_cierre_venta);
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<ProductModel>()
+                .HasKey(p => p.Id);
 
             modelBuilder.Entity<SaleModel>()
-             .HasOne(s => s.Product)
-             .WithMany()
-             .HasForeignKey(s => s.id_producto)
-             .IsRequired(false); // Hace que la relación sea opcional
+                .HasKey(s => s.Id);
+
+            modelBuilder.Entity<CloseSales>()
+                .HasKey(c => c.Id);
+
+            modelBuilder.Entity<SaleModel>()
+                .HasMany(s => s.Ticket)
+                .WithOne()
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CloseSales>()
+                .HasMany(c => c.listado_de_ventas_dia)
+                .WithOne()
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

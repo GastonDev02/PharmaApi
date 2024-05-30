@@ -61,7 +61,7 @@ namespace PharmaApi.Controllers
             try
             {
                 _productService.CreateProduct(newProduct);
-                return CreatedAtAction(nameof(GetProductById), new { id = newProduct.id_producto }, newProduct);
+                return CreatedAtAction(nameof(GetProductById), new { id = newProduct.Id }, newProduct);
             }
             catch (Exception ex)
             {
